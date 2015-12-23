@@ -33,3 +33,4 @@ vertBoard = [[[0 if y is 0 else game.EMPTY_SPOT for p in range(size)] for y in r
 state._setBoard(vertBoard)
 state.printState()
 
+player2 = gameAgents.PerceptronAgent(1, False)

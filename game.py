@@ -1,10 +1,12 @@
 EMPTY_SPOT = -1
 FROM_UNUSED = -2
+PLAYERS = 2
+SIZE = 3
 
 class GobletState:
 	def __init__(self):
-		self.size = 4
-		self.players = 2
+		self.size = SIZE
+		self.players = PLAYERS
 		self.board = [[[EMPTY_SPOT for x in range(self.size)] for x in range(self.size)] for x in range(self.size)]
 		self.peices = [[self.size - 1 for x in range(self.size)] for x in range(self.players)]
 
@@ -109,6 +111,7 @@ class GobletState:
 					simplifiedBoard[x][y] = (player, size)
 
 		self.simple = simplifiedBoard
+		self.stable = True
 		return simplifiedBoard
 
 	def isGoalState(self, agentId):
@@ -144,7 +147,6 @@ class GobletState:
 				row_win = row_win and simplifiedBoard[x][y][0] is simplifiedBoard[x][0][0] 
 				col_win = col_win and simplifiedBoard[y][x][0] is simplifiedBoard[0][x][0]
 			if row_win or col_win:
-				print 'row/col win', row_win, col_win
 				return True
 
 		# Check diagonals
