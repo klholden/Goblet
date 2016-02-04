@@ -4,6 +4,16 @@ import heapq
  Data structures useful for implementing SearchAgents
 """
 
+def copyList(oldList):
+    newList = [ 0 for i in range(len(oldList))]
+    for i in range(len(oldList)):
+        value = oldList[i]
+        if type(value) is type(oldList):
+            newList[i] = copyList(value)
+        else:
+            newList[i] = value
+    return newList
+
 class Stack:
     "A container with a last-in-first-out (LIFO) queuing policy."
     def __init__(self):

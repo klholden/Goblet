@@ -1,24 +1,30 @@
 import game
+import threading
 
 evaluatedStates = {}
+dictLock = threading.Lock()
 
 def basicEvaluationFunction(gameState, currId):
 	if gameState not in evaluatedStates.keys():
-		evaluatedStates[gameState] = _evalFunc(gameState)
-	return evaluatedStates[gameState][currId]	
+		evalState = _evalFunc(gameState)
+		with dictLock:
+			evaluatedStates[gameState] = evalState
+	return evaluatedStates[gameState][currId]
+
+def threadEval(gameState):
+	if gameState not in evaluatedStates.keys():
+		evalState = _evalFunc(gameState)
+		with dictLock:
+			evaluatedStates[gameState] = evalState
 
 
 def _evalFunc(gameState):
 	scores = [0 for player in range(game.PLAYERS)]
 	endState = gameState.isEndState()
 
-	inARow = []
-	if not endState:
-		inARow = _getInARow(gameState)
-
 	for player in range(game.PLAYERS):
 		if endState:
-			if gameState.isGoalState(currId):
+			if gameState.isGoalState(player):
 				scores[player] = float('inf')
 			else:
 				scores[player] = -1 * float('inf')
@@ -31,48 +37,23 @@ def _evalFunc(gameState):
 					for peice in range(game.SIZE):
 						if board[x][y][peice] is player:
 							peiceCount += 1
+
+			inARow = [ 0 for x in range(game.SIZE) ]
+			seeableCount = 0
+
+			for count in gameState.vertCount[player]:
+				inARow[count] += 1
+				seeableCount += count
+			scores[player] += seeableCount
+
+			for count in gameState.horzCount[player]:
+				inARow[count] += 1 
+			for count in gameState.diagCount[player]:
+				inARow[count] += 1 
 		
-			for i in range(len(inARow[player])):
-				scores[player] += i ** inARow[player][i]
+			for i in range(game.SIZE):
+				scores[player] += i ** inARow[i]
 
 	return scores
 
-def _getInARow(gameState):
-	simpleBoard = gameState._simplifyBoard()
-	inARow = [[0 for x in range(game.SIZE)] for player in range(game.PLAYERS)]
-	for x in range(game.SIZE):
-		horizontalCount = [0 for player in range(game.PLAYERS)]
-		verticalCount = [0 for player in range(game.PLAYERS)]
-		for y in range(game.SIZE):
-			horzId = simpleBoard[x][y][0]
-			vertId = simpleBoard[y][x][0]
 
-			if horzId in range(game.PLAYERS):
-				horizontalCount[horzId] += 1
-			if vertId in range(game.PLAYERS):
-				verticalCount[vertId] += 1 
-			
-		for player in range(game.PLAYERS):	
-			print verticalCount[player], horizontalCount[player]	
-			inARow[player][verticalCount[player]] += 1
-			inARow[player][horizontalCount[player]] += 1
-
-
-
-	leftDiagCount = [0 for player in range(game.PLAYERS)]
-	rightDiagCount = [0 for player in range(game.PLAYERS)]
-	for i in range(game.SIZE):
-		left = simpleBoard[i][i][0]
-		right = simpleBoard[i][game.SIZE - 1 - i][0]
-
-		if left in range(game.PLAYERS):
-			leftDiagCount[left] += 1
-		if right in range(game.PLAYERS):
-			rightDiagCount[right] += 1
-
-
-	for player in range(game.PLAYERS):
-		inARow[player][leftDiagCount[player]] += 1
-		inARow[player][rightDiagCount[player]] += 1
-
-	return inARow

@@ -2,6 +2,7 @@ import game
 import heuristics
 import util
 import random
+import threading
 
 class GameAgent:
 
@@ -54,11 +55,25 @@ class HeuristicAgent(GameAgent):
 
 		# Maximize your moves and minimize oppoent's score (secondarily)
 		actionOptions = util.PriorityQueue()
-		opposingRanking
+		
+		sucessors = {}
+		threads = {}
 		for action in gameState.getLegalActions(currId):
 			next = gameState.generateSucessor(currId, action)
-			evaluation = heuristics.basicEvaluationFunction(next, currId)
+			sucessors[action] = next
+			thread = threading.Thread(threadEval, args=(gameState,))
+			thread.start()
+			threads[action] = thread
 
+		for action in gameState.getLegalActions(currId):
+			# Wait until processing thread is done
+			threads[action].join()
+
+			# Access Next State
+			next = sucessors[action]
+
+			# Access evaluation and rank
+			evaluation = heuristics.basicEvaluationFunction(next, currId)
 			actionOptions.push((action, evaluation), evaluation * -1)
 
 		if actionOptions.isEmpty():
@@ -73,7 +88,7 @@ class HeuristicAgent(GameAgent):
 				evaluation += heuristics.basicEvaluationFunction(next, player)
 			minOpponents.push((option, evaluation), evaluation)
 
-		return random.choice(_getSameGroup(minOpponents))
+		return random.choice(self._getSameGroup(minOpponents))
 
 	def _getSameGroup(actionOptions):
 		actionOption, actionEval = actionOptions.pop()
@@ -107,12 +122,27 @@ class ExpectimaxAgent(GameAgent):
 			return 'End State'
 
 		# print 'depth', depth, 'currId', currId, '\n', gameState.toString()
-
-		actionOptions = util.PriorityQueue()
+		sucessors = {}
+		threads = {}
 		for action in gameState.getLegalActions(currId):
 			next = gameState.generateSucessor(currId, action)
-			nextDepth = depth + 1 if currId is self.agentId else depth
+			sucessors[action] = next
+			thread = threading.Thread(target=heuristics.threadEval, args=(next, ))
+			thread.start()
+			threads[action] = thread
+
+
+		actionOptions = util.PriorityQueue()
+
+		for action in gameState.getLegalActions(currId):
+			# Get next state
+			next = sucessors[action]
+			
+			# Wait for thread to be done
+			threads[action].join()
+
 			nextId = (currId + 1) % gameState.getPlayers()
+			nextDepth = depth + 1 if nextId is self.agentId else depth
 
 			nextAction = self._getMax(next, nextDepth, nextId)
 			nextState = next

@@ -1,15 +1,15 @@
 import game
 import gameAgents
 
-NUM_GAMES = 1000
+NUM_GAMES = 1
 PRINT_GAMES = False
 PRINT_PRECEPT = True
 
 # player1 = gameAgents.ExpectimaxAgent(0)
-player1 = gameAgents.GameAgent(0)
-# player1 = gameAgents.InputAgent(0)
-# player2 = gameAgents.ExpectimaxAgent(1)
-player2 = gameAgents.PerceptronAgent(1, False)
+# player1 = gameAgents.GameAgent(0)
+player1 = gameAgents.InputAgent(0)
+player2 = gameAgents.ExpectimaxAgent(1)
+# player2 = gameAgents.PerceptronAgent(1, False)
 # player2.printWeights()
 
 # player3 = gameAgents.RandomAgent(0)
@@ -18,7 +18,7 @@ player2 = gameAgents.PerceptronAgent(1, False)
 players = [ player1, player2 ]
 playerCount = len(players)
 
-playerWins = [0 for i in range(playerCount)]
+playerWins = [ 0 for i in range(playerCount) ]
 
 
 for gameCount in range(1, 1 + NUM_GAMES):
